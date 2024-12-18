@@ -99,6 +99,8 @@ public class MapViewModel extends ViewModel
     private RaPreferences mRaPrefs;
     public MutableLiveData<LatLong> navLatLong = new MutableLiveData<>();
 
+    public MutableLiveData<Float> compassHeading = new MutableLiveData<>(); // Pc8d3
+
     public void setRssi (Double val) { rssi.setValue(val); }
     public void setShowRssi (boolean val) { showRssi.setValue(val); }
     public void setFrequency (Double val) { frequency.setValue(val); }
@@ -721,5 +723,9 @@ public class MapViewModel extends ViewModel
                 setMapMode(1);
             }
         }
+    }
+
+    public void updateMapOrientation(float heading) { // P5bdf
+        compassHeading.setValue(heading);
     }
 }
