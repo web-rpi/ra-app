@@ -12,6 +12,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -80,7 +84,8 @@ public class MainActivity extends AppCompatActivity
     implements
         View.OnCreateContextMenuListener,
         SharedPreferences.OnSharedPreferenceChangeListener,
-        FragmentHeard.SondeActions {
+        FragmentHeard.SondeActions,
+        SensorEventListener {
     private final static String TAG = MainActivity.class.getName();
 
     private static final int PERMISSIONS_REQUEST_ALL = 18;
@@ -113,6 +118,9 @@ public class MainActivity extends AppCompatActivity
     private RaComm.TargetInfo mTargetInfo;
     private HashMap<Integer, SondeListItem.Xdata> mXdataCollection;
     ActivityResultLauncher<Intent> mSettingsChangedActivityResultLauncher;
+
+    private SensorManager sensorManager;
+    private Sensor compassSensor;
 
     // Safe conversion from String to double/integer
     private double safeDoubleFromString(String s, double defaultValue) {
@@ -730,6 +738,12 @@ public class MainActivity extends AppCompatActivity
 //                        Intent data = result.getData();
 //                    }
                 });
+
+        // Initialize sensor manager and compass sensor
+        sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        if (sensorManager != null) {
+            compassSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION);
+        }
     }
 
     @Override
@@ -791,6 +805,11 @@ public class MainActivity extends AppCompatActivity
 
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mLocalReceiver);
 
+        // Unregister compass sensor listener
+        if (sensorManager != null) {
+            sensorManager.unregisterListener(this, compassSensor);
+        }
+
         super.onPause();
     }
 
@@ -835,6 +854,11 @@ public class MainActivity extends AppCompatActivity
                 Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION, uri);
                 startActivity(intent);
             }
+        }
+
+        // Register compass sensor listener
+        if (sensorManager != null) {
+            sensorManager.registerListener(this, compassSensor, SensorManager.SENSOR_DELAY_UI);
         }
     }
 
@@ -1034,5 +1058,18 @@ public class MainActivity extends AppCompatActivity
         else if (RaPreferences.KEY_PREF_SYSTEM_SHOW_BLE_RSSI.equals(key)) {
             dashboardViewModel.setShowBleRssi(mRaPrefs.getSystemShowBleRssi());
         }
+    }
+
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+        if (event.sensor.getType() == Sensor.TYPE_ORIENTATION) {
+            float azimuth = event.values[0];
+            mapViewModel.updateMapOrientation(azimuth);
+        }
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+        // Do nothing
     }
 }

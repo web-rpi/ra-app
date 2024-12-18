@@ -169,6 +169,7 @@
                 app:mapMode='@{viewModel.mapMode}'
                 app:sondeLayers='@{viewModel.sondeLayers}'
                 app:showDebugLayers='@{viewModel.debugGrid}'
+                app:compassHeading='@{viewModel.compassHeading}' <!-- P280f -->
                 />
 
             <de.leckasemmel.sonde1.views.SMeterView
@@ -261,6 +262,19 @@
                 android:onLongClick='@{(view) -> viewModel.onFabGotoSondeLongClicked(view)}'
                 android:alpha="0.75"
                 app:fabSize="normal"
+                />
+
+            <ToggleButton
+                android:id="@+id/toggle_compass_alignment"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_below="@id/map_fab_goto_sonde"
+                android:layout_marginTop="10dp"
+                android:textOn="Compass On"
+                android:textOff="Compass Off"
+                android:checked="@{viewModel.compassAlignmentEnabled}" <!-- Pd34c -->
+                android:alpha="0.75"
                 />
 
             <TextView
